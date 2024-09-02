@@ -14,6 +14,7 @@ function Grid({ width }) {
           break;
         case 'ArrowRight':
           moveRight();
+          addRows();
           break;
         case 'ArrowUp':
           break;
@@ -40,7 +41,7 @@ function Grid({ width }) {
     return listOfNums;
   }
 
-  const moveRight = () => {
+  function moveRight() {
     setSquares((prevSquares) => {
       const oriSquares = [];
       const newSquares = [];
@@ -68,7 +69,27 @@ function Grid({ width }) {
 
       return generate(newSquares);
     });
-  };
+  }
+
+  function addRows() {
+    setSquares((prevSquares) => {
+      const newSquares = [...prevSquares];
+
+      for (let i = 0; i < newSquares.length; i++) {
+        if (i % 4 === 0) {
+          // iterate backwards from each row
+          for (let j = i + 3; j > i; j--) {
+            if (newSquares[j] === newSquares[j - 1]) {
+              newSquares[j] *= 2;
+              newSquares[j - 1] = 0;
+            }
+          }
+        }
+      }
+
+      return newSquares;
+    });
+  }
 
   return (
     <div className="grid">
