@@ -94,6 +94,7 @@ h1 {
 }
 
 .grid div {
+  user-select: none;
   width: 132px;
   height: 132px;
   margin: 7px;

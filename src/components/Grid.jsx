@@ -1,6 +1,7 @@
 import React from 'react';
 import Square from './Square';
 import generateRandomNum from '../utils/generateRandomNum';
+import logArrayWithColumns from '../utils/logArrayCol';
 
 function Grid({ width }) {
   const [squares, setSquares] = React.useState(() =>
@@ -14,7 +15,6 @@ function Grid({ width }) {
           break;
         case 'ArrowRight':
           moveRight();
-          addRows();
           break;
         case 'ArrowUp':
           break;
@@ -30,7 +30,7 @@ function Grid({ width }) {
 
   function generate(arr, times = 1) {
     const listOfNums = [...arr];
-
+    // logArrayWithColumns(arr, 4);
     for (let i = 0; i < times; i++) {
       let randomIndex = generateRandomNum(listOfNums.length);
       while (listOfNums[randomIndex] !== 0) {
@@ -43,51 +43,49 @@ function Grid({ width }) {
 
   function moveRight() {
     setSquares((prevSquares) => {
-      const oriSquares = [];
-      const newSquares = [];
+      const { initial: oriSquares, result: newSquares } = shiftRight(...prevSquares);
 
-      for (let i = 0; i < prevSquares.length; i++) {
-        if (i % 4 === 0) {
-          const originalRow = [
-            prevSquares[i],
-            prevSquares[i + 1],
-            prevSquares[i + 2],
-            prevSquares[i + 3],
-          ];
-          oriSquares.push(...originalRow);
+      const nextSquares = combineNumbers(...newSquares);
 
-          const numberedRow = originalRow.filter((n) => n);
-          const zerosArr = Array(4 - numberedRow.length).fill(0);
-          const newRow = [...zerosArr, ...numberedRow];
-          newSquares.push(...newRow);
-        }
+      const { result: result } = shiftRight(...nextSquares);
+
+      if (JSON.stringify(oriSquares) === JSON.stringify(result)) {
+        return oriSquares;
       }
 
-      if (JSON.stringify(oriSquares) === JSON.stringify(newSquares)) {
-        return newSquares;
-      }
+      return generate(result);
 
-      return generate(newSquares);
-    });
-  }
-
-  function addRows() {
-    setSquares((prevSquares) => {
-      const newSquares = [...prevSquares];
-
-      for (let i = 0; i < newSquares.length; i++) {
-        if (i % 4 === 0) {
-          // iterate backwards from each row
-          for (let j = i + 3; j > i; j--) {
-            if (newSquares[j] === newSquares[j - 1]) {
-              newSquares[j] *= 2;
-              newSquares[j - 1] = 0;
+      function combineNumbers(...arr) {
+        for (let i = 0; i < arr.length; i++) {
+          if (i % 4 === 0) {
+            // iterate backwards from each row
+            for (let j = i + 3; j > i; j--) {
+              if (arr[j] === arr[j - 1]) {
+                arr[j] *= 2;
+                arr[j - 1] = 0;
+              }
             }
           }
         }
+        return arr;
       }
 
-      return newSquares;
+      function shiftRight(...arr) {
+        const initial = [];
+        const result = [];
+        for (let i = 0; i < arr.length; i++) {
+          if (i % 4 === 0) {
+            const originalRow = [arr[i], arr[i + 1], arr[i + 2], arr[i + 3]];
+            initial.push(...originalRow);
+
+            const numberedRow = originalRow.filter((n) => n);
+            const zerosArr = Array(4 - numberedRow.length).fill(0);
+            const newRow = [...zerosArr, ...numberedRow];
+            result.push(...newRow);
+          }
+        }
+        return { initial, result };
+      }
     });
   }
 
