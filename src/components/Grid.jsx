@@ -12,6 +12,7 @@ function Grid({ width }) {
     const handleKeydown = (e) => {
       switch (e.code) {
         case 'ArrowLeft':
+          moveLeft();
           break;
         case 'ArrowRight':
           moveRight();
@@ -29,6 +30,8 @@ function Grid({ width }) {
   }, []);
 
   function generate(arr, times = 1) {
+    //TODO: Bail out if all squares filled with non-zeros
+
     const listOfNums = [...arr];
     // logArrayWithColumns(arr, 4);
     for (let i = 0; i < times; i++) {
@@ -81,6 +84,53 @@ function Grid({ width }) {
             const numberedRow = originalRow.filter((n) => n);
             const zerosArr = Array(4 - numberedRow.length).fill(0);
             const newRow = [...zerosArr, ...numberedRow];
+            result.push(...newRow);
+          }
+        }
+        return { initial, result };
+      }
+    });
+  }
+
+  function moveLeft() {
+    setSquares((prevSquares) => {
+      const { initial: oriSquares, result: newSquares } = shiftLeft(...prevSquares);
+
+      const nextSquares = combineNumbers(...newSquares);
+
+      const { result: result } = shiftLeft(...nextSquares);
+
+      if (JSON.stringify(oriSquares) === JSON.stringify(result)) {
+        return oriSquares;
+      }
+
+      return generate(result);
+
+      function combineNumbers(...arr) {
+        for (let i = 0; i < arr.length; i++) {
+          if (i % 4 === 0) {
+            for (let j = i; j < i + 3; j++) {
+              if (arr[j] === arr[j + 1]) {
+                arr[j] *= 2;
+                arr[j + 1] = 0;
+              }
+            }
+          }
+        }
+        return arr;
+      }
+
+      function shiftLeft(...arr) {
+        const initial = [];
+        const result = [];
+        for (let i = 0; i < arr.length; i++) {
+          if (i % 4 === 0) {
+            const originalRow = [arr[i], arr[i + 1], arr[i + 2], arr[i + 3]];
+            initial.push(...originalRow);
+
+            const numberedRow = originalRow.filter((n) => n);
+            const zerosArr = Array(4 - numberedRow.length).fill(0);
+            const newRow = [...numberedRow, ...zerosArr];
             result.push(...newRow);
           }
         }
