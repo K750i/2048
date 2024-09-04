@@ -5,7 +5,7 @@ import logArrayWithColumns from '../utils/logArrayCol';
 
 function Grid({ width }) {
   const [squares, setSquares] = React.useState(() =>
-    generate(Array(width * width).fill(0), 2)
+    spawnNumber(Array(width * width).fill(0), 2)
   );
 
   React.useEffect(() => {
@@ -18,8 +18,10 @@ function Grid({ width }) {
           moveRight();
           break;
         case 'ArrowUp':
+          moveUp();
           break;
         case 'ArrowDown':
+          moveDown();
           break;
       }
     };
@@ -29,11 +31,11 @@ function Grid({ width }) {
     return () => document.removeEventListener('keydown', handleKeydown);
   }, []);
 
-  function generate(arr, times = 1) {
+  function spawnNumber(arr, times = 1) {
     //TODO: Bail out if all squares filled with non-zeros
 
     const listOfNums = [...arr];
-    // logArrayWithColumns(arr, 4);
+
     for (let i = 0; i < times; i++) {
       let randomIndex = generateRandomNum(listOfNums.length);
       while (listOfNums[randomIndex] !== 0) {
@@ -46,17 +48,16 @@ function Grid({ width }) {
 
   function moveRight() {
     setSquares((prevSquares) => {
-      const { initial: oriSquares, result: newSquares } = shiftRight(...prevSquares);
+      const initial = [...prevSquares];
+      const shifted = shiftRight(...initial);
+      const combined = combineNumbers(...shifted);
+      const result = shiftRight(...combined);
 
-      const nextSquares = combineNumbers(...newSquares);
-
-      const { result: result } = shiftRight(...nextSquares);
-
-      if (JSON.stringify(oriSquares) === JSON.stringify(result)) {
-        return oriSquares;
+      if (JSON.stringify(initial) === JSON.stringify(result)) {
+        return initial;
       }
 
-      return generate(result);
+      return spawnNumber(result);
 
       function combineNumbers(...arr) {
         for (let i = 0; i < arr.length; i++) {
@@ -74,37 +75,33 @@ function Grid({ width }) {
       }
 
       function shiftRight(...arr) {
-        const initial = [];
         const result = [];
         for (let i = 0; i < arr.length; i++) {
           if (i % 4 === 0) {
             const originalRow = [arr[i], arr[i + 1], arr[i + 2], arr[i + 3]];
-            initial.push(...originalRow);
-
             const numberedRow = originalRow.filter((n) => n);
-            const zerosArr = Array(4 - numberedRow.length).fill(0);
+            const zerosArr = Array(width - numberedRow.length).fill(0);
             const newRow = [...zerosArr, ...numberedRow];
             result.push(...newRow);
           }
         }
-        return { initial, result };
+        return result;
       }
     });
   }
 
   function moveLeft() {
     setSquares((prevSquares) => {
-      const { initial: oriSquares, result: newSquares } = shiftLeft(...prevSquares);
+      const initial = [...prevSquares];
+      const shifted = shiftLeft(...initial);
+      const combined = combineNumbers(...shifted);
+      const result = shiftLeft(...combined);
 
-      const nextSquares = combineNumbers(...newSquares);
-
-      const { result: result } = shiftLeft(...nextSquares);
-
-      if (JSON.stringify(oriSquares) === JSON.stringify(result)) {
-        return oriSquares;
+      if (JSON.stringify(initial) === JSON.stringify(result)) {
+        return initial;
       }
 
-      return generate(result);
+      return spawnNumber(result);
 
       function combineNumbers(...arr) {
         for (let i = 0; i < arr.length; i++) {
@@ -121,20 +118,117 @@ function Grid({ width }) {
       }
 
       function shiftLeft(...arr) {
-        const initial = [];
         const result = [];
         for (let i = 0; i < arr.length; i++) {
           if (i % 4 === 0) {
             const originalRow = [arr[i], arr[i + 1], arr[i + 2], arr[i + 3]];
-            initial.push(...originalRow);
-
             const numberedRow = originalRow.filter((n) => n);
-            const zerosArr = Array(4 - numberedRow.length).fill(0);
+            const zerosArr = Array(width - numberedRow.length).fill(0);
             const newRow = [...numberedRow, ...zerosArr];
             result.push(...newRow);
           }
         }
-        return { initial, result };
+        return result;
+      }
+    });
+  }
+
+  function moveUp() {
+    setSquares((prevSquares) => {
+      const initial = [...prevSquares];
+      const shifted = shiftUp(...initial);
+      const combined = combineNumbers(...shifted);
+      const result = shiftUp(...combined);
+
+      if (JSON.stringify(initial) === JSON.stringify(result)) {
+        return initial;
+      }
+
+      return spawnNumber(result);
+
+      function combineNumbers(...arr) {
+        for (let i = 0; i < width; i++) {
+          for (let j = i; j <= i + width * 2; j += width) {
+            if (arr[j] === arr[j + width]) {
+              arr[j] *= 2;
+              arr[j + width] = 0;
+            }
+          }
+        }
+        return arr;
+      }
+
+      function shiftUp(...arr) {
+        const result = [];
+        for (let i = 0; i < width; i++) {
+          const originalCol = [
+            arr[i],
+            arr[i + width],
+            arr[i + width * 2],
+            arr[i + width * 3],
+          ];
+
+          const numberedCol = originalCol.filter((n) => n);
+          const zerosArr = Array(width - numberedCol.length).fill(0);
+          const newCol = [...numberedCol, ...zerosArr];
+
+          result[i] = newCol[0];
+          result[i + width] = newCol[1];
+          result[i + width * 2] = newCol[2];
+          result[i + width * 3] = newCol[3];
+        }
+
+        return result;
+      }
+    });
+  }
+
+  function moveDown() {
+    setSquares((prevSquares) => {
+      const initial = [...prevSquares];
+      const shifted = shiftDown(...initial);
+      const combined = combineNumbers(...shifted);
+      const result = shiftDown(...combined);
+
+      if (JSON.stringify(initial) === JSON.stringify(result)) {
+        return initial;
+      }
+
+      return spawnNumber(result);
+
+      function combineNumbers(...arr) {
+        for (let i = 0; i < width; i++) {
+          for (let j = i + width * 3; j >= i + width; j -= width) {
+            if (arr[j] === arr[j - width]) {
+              arr[j] *= 2;
+              arr[j - width] = 0;
+            }
+          }
+        }
+        return arr;
+      }
+
+      function shiftDown(...arr) {
+        const result = [];
+        for (let i = 0; i < width; i++) {
+          const originalCol = [
+            arr[i],
+            arr[i + width],
+            arr[i + width * 2],
+            arr[i + width * 3],
+          ];
+
+          const numberedCol = originalCol.filter((n) => n);
+          const zerosArr = Array(width - numberedCol.length).fill(0);
+          const newCol = [...zerosArr, ...numberedCol];
+
+          result[i] = newCol[0];
+          result[i + width] = newCol[1];
+          result[i + width * 2] = newCol[2];
+          result[i + width * 3] = newCol[3];
+        }
+
+        return result;
       }
     });
   }

@@ -1,4 +1,4 @@
-export default function logArrayWithColumns(arr, columns) {
+export default function logArrayWithColumns(arr, columns = 4) {
   let result = '';
   for (let i = 0; i < arr.length; i++) {
     result += arr[i] + '\t'; // '\t' adds a tab space for better formatting
