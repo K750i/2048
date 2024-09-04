@@ -1,4 +1,4 @@
-function Info() {
+function Info({ score }) {
   return (
     <div className="info">
       <div>
@@ -9,7 +9,7 @@ function Info() {
       </div>
       <div className="score-container">
         <p className="score-title">Score</p>
-        <h2 id="score">0</h2>
+        <h2 id="score">{score}</h2>
       </div>
     </div>
   );

@@ -1,12 +1,16 @@
 import React from 'react';
 import Square from './Square';
-import generateRandomNum from '../utils/generateRandomNum';
 import logArrayWithColumns from '../utils/logArrayCol';
 
-function Grid({ width }) {
+function Grid({ width, updateScore }) {
   const [squares, setSquares] = React.useState(() =>
     spawnNumber(Array(width * width).fill(0), 2)
   );
+  const scoreRef = React.useRef(0);
+
+  React.useEffect(() => {
+    updateScore(scoreRef.current);
+  }, [scoreRef.current]);
 
   React.useEffect(() => {
     const handleKeydown = (e) => {
@@ -32,18 +36,21 @@ function Grid({ width }) {
   }, []);
 
   function spawnNumber(arr, times = 1) {
-    //TODO: Bail out if all squares filled with non-zeros
+    const zeroIndexes = arr
+      .map((value, index) => (value === 0 ? index : -1))
+      .filter((index) => index !== -1);
 
-    const listOfNums = [...arr];
+    if (!zeroIndexes.length) return;
+
+    const newSquares = [...arr];
 
     for (let i = 0; i < times; i++) {
-      let randomIndex = generateRandomNum(listOfNums.length);
-      while (listOfNums[randomIndex] !== 0) {
-        randomIndex = generateRandomNum(listOfNums.length);
-      }
-      listOfNums[randomIndex] = Math.random() < 0.8 ? 2 : 4;
+      const randomIndex = Math.floor(Math.random() * zeroIndexes.length);
+      const zeroSquareIdx = zeroIndexes[randomIndex];
+
+      newSquares[zeroSquareIdx] = Math.random() < 0.85 ? 2 : 4;
     }
-    return listOfNums;
+    return newSquares;
   }
 
   function moveRight() {
@@ -66,6 +73,7 @@ function Grid({ width }) {
             for (let j = i + 3; j > i; j--) {
               if (arr[j] === arr[j - 1]) {
                 arr[j] *= 2;
+                scoreRef.current += arr[j];
                 arr[j - 1] = 0;
               }
             }
@@ -109,6 +117,7 @@ function Grid({ width }) {
             for (let j = i; j < i + 3; j++) {
               if (arr[j] === arr[j + 1]) {
                 arr[j] *= 2;
+                scoreRef.current += arr[j];
                 arr[j + 1] = 0;
               }
             }
@@ -151,6 +160,7 @@ function Grid({ width }) {
           for (let j = i; j <= i + width * 2; j += width) {
             if (arr[j] === arr[j + width]) {
               arr[j] *= 2;
+              scoreRef.current += arr[j];
               arr[j + width] = 0;
             }
           }
@@ -201,6 +211,7 @@ function Grid({ width }) {
           for (let j = i + width * 3; j >= i + width; j -= width) {
             if (arr[j] === arr[j - width]) {
               arr[j] *= 2;
+              scoreRef.current += arr[j];
               arr[j - width] = 0;
             }
           }
